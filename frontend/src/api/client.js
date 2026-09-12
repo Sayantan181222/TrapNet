@@ -1,8 +1,8 @@
 import axios from 'axios';
 
 const client = axios.create({
-  // production backend with HTTPS
-  baseURL: 'https://trapnet.sayantanmandal.is-a.dev:8000',
+  // all API calls proxied through Nginx at /api/
+  baseURL: 'https://trapnet.sayantanmandal.is-a.dev/api',
   headers: {
     'Content-Type': 'application/json',
   },
