@@ -69,55 +69,16 @@ export default function Predict() {
       formData.append('file', file);
 
       const response = await client.post('/predict', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-        responseType: 'text',
+        headers: { 'Content-Type': 'multipart/form-data' },
       });
 
-      // Parse HTML response using DOMParser to extract <table>
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(response.data, 'text/html');
-      const table = doc.querySelector('table');
+      const data = response.data;
 
-      if (!table) {
-        throw new Error('No prediction table was returned by the server.');
+      if (Array.isArray(data) && data.length > 0) {
+        setResults(data);
+      } else {
+        setError('No prediction table was returned by the server.');
       }
-
-      // Extract column headers
-      const theadThs = table.querySelectorAll('thead th');
-      const thElements =
-        theadThs.length > 0
-          ? Array.from(theadThs)
-          : Array.from(table.querySelectorAll('tr:first-child th'));
-
-      const headers = thElements.map((th, index) => {
-        const text = th.textContent.trim();
-        if (index === 0 && !text) return '#';
-        return text || `column_${index}`;
-      });
-
-      // Extract rows
-      const tbodyRows = table.querySelectorAll('tbody tr');
-      const trElements =
-        tbodyRows.length > 0
-          ? Array.from(tbodyRows)
-          : Array.from(table.querySelectorAll('tr')).slice(1);
-
-      const parsedData = [];
-      trElements.forEach((tr) => {
-        const cells = Array.from(tr.querySelectorAll('th, td'));
-        if (cells.length > 0) {
-          const rowObj = {};
-          cells.forEach((cell, cellIdx) => {
-            const key = headers[cellIdx] || `col_${cellIdx}`;
-            rowObj[key] = cell.textContent.trim();
-          });
-          parsedData.push(rowObj);
-        }
-      });
-
-      setResults(parsedData);
     } catch (err) {
       console.error('Prediction error:', err);
       setError(
