@@ -1,0 +1,33 @@
+services:
+  backend:
+    build: .
+    container_name: trapnet-backend
+    ports:
+      - "8000:8000"
+    environment:
+      - MONGO_DB_URL
+      - AWS_ACCESS_KEY_ID
+      - AWS_SECRET_ACCESS_KEY
+      - AWS_REGION=ap-south-1
+    volumes:
+      - ./final_model:/app/final_model
+      - ./logs:/app/logs
+      - ./Artifacts:/app/Artifacts
+    restart: always
+    networks:
+      - trapnet-network
+
+  frontend:
+    build: ./frontend
+    container_name: trapnet-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    restart: always
+    networks:
+      - trapnet-network
+
+networks:
+  trapnet-network:
+    driver: bridge

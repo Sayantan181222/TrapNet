@@ -1,5 +1,6 @@
 import sys
 import os
+from contextlib import asynccontextmanager
 
 import certifi
 ca = certifi.where()
@@ -33,7 +34,19 @@ from networksecurity.constant.training_pipeline import DATA_INGESTION_DATABASE_N
 database = client[DATA_INGESTION_DATABASE_NAME]
 collection = database[DATA_INGESTION_COLLECTION_NAME]
 
-app = FastAPI()
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # startup
+    model_path = "final_model/model.pkl"
+    preprocessor_path = "final_model/preprocessor.pkl"
+    if os.path.exists(model_path) and os.path.exists(preprocessor_path):
+        logging.info("Model files found locally. Ready to serve predictions.")
+    else:
+        logging.warning("Model files missing. /predict will fail until training is run.")
+    yield
+    # shutdown
+
+app = FastAPI(lifespan=lifespan)
 origins = ["*"]
 
 app.add_middleware(

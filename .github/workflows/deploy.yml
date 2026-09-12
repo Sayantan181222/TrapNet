@@ -1,0 +1,54 @@
+name: Deploy TrapNet to EC2
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-south-1
+
+      - name: Pull latest model from S3 before deploy
+        run: |
+          aws s3 sync s3://networksecurity-trapnet/final_model/ final_model/ --region ap-south-1
+
+      - name: Copy all files to EC2 via SCP
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          source: ".,!.git,!.github,!frontend/node_modules,!__pycache__,!*.pyc,!.env"
+          target: /home/ubuntu/trapnet
+
+      - name: SSH into EC2 and deploy
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            cd /home/ubuntu/trapnet
+
+            echo "MONGO_DB_URL=${{ secrets.MONGO_DB_URL }}" > .env
+            echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> .env
+            echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> .env
+            echo "AWS_REGION=ap-south-1" >> .env
+
+            docker compose down
+            docker compose build --no-cache
+            docker compose up -d
+
+            docker ps
