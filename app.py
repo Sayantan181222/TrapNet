@@ -43,6 +43,10 @@ async def lifespan(app: FastAPI):
         logging.info("Model files found locally. Ready to serve predictions.")
     else:
         logging.warning("Model files missing. /predict will fail until training is run.")
+
+    dagshub_token = os.getenv("DAGSHUB_TOKEN")
+    if not dagshub_token:
+        logging.warning("DAGSHUB_TOKEN not set. MLflow tracking disabled.")
     yield
     # shutdown
 

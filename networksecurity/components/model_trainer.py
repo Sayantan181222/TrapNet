@@ -22,9 +22,6 @@ from sklearn.ensemble import (
 )
 import mlflow
 
-import dagshub
-dagshub.init(repo_owner='sayantanman508', repo_name='networksecurity', mlflow=True)
-
 
 class ModelTrainer:
     def __init__(self,model_trainer_config:ModelTrainerConfig,data_transformation_artifact:DataTransformationArtifact):
@@ -140,6 +137,11 @@ class ModelTrainer:
         
     def initiate_model_trainer(self)->ModelTrainerArtifact:
         try:
+            dagshub_token = os.getenv("DAGSHUB_TOKEN")
+            if dagshub_token:
+                import dagshub
+                dagshub.init(repo_owner='sayantanman508', repo_name='networksecurity', mlflow=True)
+
             train_file_path = self.data_transformation_artifact.transformed_train_file_path
             test_file_path = self.data_transformation_artifact.transformed_test_file_path
 
