@@ -16,7 +16,6 @@ TrapNet is an end-to-end MLOps network security solution engineered for real-tim
 ## 2. Live Demo
 
 🌐 Live Application: [https://trapnet.sayantanmandal.is-a.dev](https://trapnet.sayantanmandal.is-a.dev)  
-📖 API Documentation: [https://trapnet.sayantanmandal.is-a.dev/api/docs](https://trapnet.sayantanmandal.is-a.dev/api/docs)
 
 ## 3. Screenshots
 
